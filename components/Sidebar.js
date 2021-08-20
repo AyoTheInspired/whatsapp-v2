@@ -1,26 +1,48 @@
 import { Avatar, Button, IconButton } from "@material-ui/core";
-import { Chat, MoreVert, Search } from "@material-ui/icons";
+import { AudiotrackSharp, Chat, MoreVert, Search } from "@material-ui/icons";
 import React from "react";
 import styled from "styled-components";
 import * as EmailValidator from "email-validator";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useCollection } from "react-firebase-hooks/firestore";
+import Chats from "./Chats";
 
 function Sidebar() {
+	const [user] = useAuthState(auth);
+
+	const userChatRef = db
+		.collection("chats")
+		.where("users", "array-contains", user.email);
+
+	const [chatsSnapshot] = useCollection(userChatRef);
+
 	const createChat = () => {
 		const input = prompt("Please enter the reciever's email address");
 
-		if (!input) {
-			return null;
-		}
+		if (!input) return null;
 
-		if (EmailValidator.validate(input)) {
+		if (
+			EmailValidator.validate(input) &&
+			!chatAlreadyExists(input) &&
+			input !== user.email
+		) {
+			db.collection("chats").add({
+				users: [user.email, input],
+			});
 		}
 	};
+
+	const chatAlreadyExists = (recipientEmail) =>
+		!!chatsSnapshot?.docs.find(
+			(chat) =>
+				chat.data().users.find((user) => user === recipientEmail)?.length > 0
+		);
 
 	return (
 		<Div>
 			<Header>
-				<UserAvatar onClick={() => auth.signOut()} />
+				<UserAvatar src={user.photoURL} onClick={() => auth.signOut()} />
 				<div className="icons__container">
 					<IconButton>
 						<Chat />
@@ -37,6 +59,10 @@ function Sidebar() {
 				<SearchInput placeholder="Search chats" />
 			</div>
 			<SidebarButton onClick={createChat}>Start a new chat</SidebarButton>
+
+			{chatsSnapshot?.docs.map((chat) => (
+				<Chats key={chat.id} id={chat.id} users={chat.data().users} />
+			))}
 		</Div>
 	);
 }
