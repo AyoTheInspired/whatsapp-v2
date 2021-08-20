@@ -72,11 +72,26 @@ function ChatScreen({ chat, messages }) {
 	return (
 		<Container>
 			<Header>
-				<Avatar src={recipient?.photoURL || recipient?.recipientEmail[0]} />
+				{recipient ? (
+					<Avatar src={recipient?.photoURL} />
+				) : (
+					<Avatar>{recipientEmail[0].toUpperCase()}</Avatar>
+				)}
 				<div className="header__information">
 					<h3> {recipientEmail} </h3>
-
-					<p>Last Seen</p>
+					{recipientSnapshot ? (
+						<p>
+							{" "}
+							Last active:{" "}
+							{recipient?.lastSeen?.toDate() ? (
+								<TimeAgo datetime={recipient?.lastSeen?.toDate()} />
+							) : (
+								"Unavailable"
+							)}{" "}
+						</p>
+					) : (
+						<p>Loading last active...</p>
+					)}
 				</div>
 
 				<div className="header__icons">
