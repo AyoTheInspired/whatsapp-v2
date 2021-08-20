@@ -4,17 +4,35 @@ import { auth, db } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/dist/client/router";
 import { Avatar, IconButton } from "@material-ui/core";
-import { AttachFile, MoreVert } from "@material-ui/icons";
+import { AttachFile, InsertEmoticon, Mic, MoreVert } from "@material-ui/icons";
 import { useCollection } from "react-firebase-hooks/firestore";
+import Message from "./Message";
 
 function ChatScreen({ chat, messages }) {
 	const router = useRouter();
 	const [user] = useAuthState(auth);
 	const [messagesSnapshot] = useCollection(
-		db.collection("chats").doc(router.query.id)
+		db
+			.collection("chats")
+			.doc(router.query.id)
+			.collection("messages")
+			.orderBy("timestamp", "asc")
 	);
 
-	const showMessages = () => {};
+	const showMessages = () => {
+		if (messagesSnapshot) {
+			return messagesSnapshot.docs.map((message) => (
+				<Message
+					key={message.id}
+					user={message.data().user}
+					message={{
+						...message.data(),
+						timestamp: message.data().timestamp?.toDate().getTime(),
+					}}
+				/>
+			));
+		}
+	};
 
 	return (
 		<Container>
@@ -37,13 +55,46 @@ function ChatScreen({ chat, messages }) {
 			</Header>
 
 			<div className="message__container">
+				{showMessages()}
+
 				<EndOfMessage />
 			</div>
+
+			<InputContainer>
+				<InsertEmoticon />
+				<Input placeholder="Type a message" />
+				<Mic />
+			</InputContainer>
 		</Container>
 	);
 }
 
 export default ChatScreen;
+
+const Input = styled.input`
+	flex: 1;
+	align-items: center;
+	padding: 15px;
+	position: sticky;
+	bottom: 0;
+	background-color: whitesmoke;
+	outline-width: 0;
+	border: none;
+	border-radius: 10px;
+	margin-left: 15px;
+	margin-right: 15px;
+	font-size: 18px;
+`;
+
+const InputContainer = styled.form`
+	display: flex;
+	align-items: center;
+	padding: 10px;
+	position: sticky;
+	bottom: 0;
+	background-color: #fff;
+	z-index: 100;
+`;
 
 const Container = styled.div``;
 
