@@ -3,6 +3,7 @@ import { Chat, MoreVert, Search } from "@material-ui/icons";
 import React from "react";
 import styled from "styled-components";
 import * as EmailValidator from "email-validator";
+import { auth } from "../firebase";
 
 function Sidebar() {
 	const createChat = () => {
@@ -19,7 +20,7 @@ function Sidebar() {
 	return (
 		<Div>
 			<Header>
-				<UserAvatar />
+				<UserAvatar onClick={() => auth.signOut()} />
 				<div className="icons__container">
 					<IconButton>
 						<Chat />
