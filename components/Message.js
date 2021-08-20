@@ -3,7 +3,7 @@ import styled from "styled-components";
 function Message({ user, message }) {
 	return (
 		<Div>
-			<p> {message} </p>
+			<p> {message?.message} </p>
 		</Div>
 	);
 }
