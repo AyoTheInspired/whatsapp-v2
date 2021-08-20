@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components";
 import { auth, db } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -14,6 +14,8 @@ function ChatScreen({ chat, messages }) {
 	const [input, setInput] = useState("");
 	const router = useRouter();
 	const [user] = useAuthState(auth);
+	const endOfMessagesRef = useRef(null);
+
 	const [recipientSnapshot] = useCollection(
 		db
 			.collection("users")
@@ -26,6 +28,13 @@ function ChatScreen({ chat, messages }) {
 			.collection("messages")
 			.orderBy("timestamp", "asc")
 	);
+
+	const scrollToBottom = () => {
+		endOfMessagesRef.current.scrollIntoView({
+			behaviour: "smooth",
+			block: "start",
+		});
+	};
 
 	const sendMessage = (e) => {
 		e.preventDefault();
@@ -45,6 +54,7 @@ function ChatScreen({ chat, messages }) {
 		});
 
 		setInput("");
+		scrollToBottom();
 	};
 
 	const showMessages = () => {
@@ -107,7 +117,7 @@ function ChatScreen({ chat, messages }) {
 			<div className="message__container">
 				{showMessages()}
 
-				<EndOfMessage />
+				<EndOfMessage ref={endOfMessagesRef} />
 			</div>
 
 			<InputContainer>
@@ -187,4 +197,6 @@ const Header = styled.div`
 	}
 `;
 
-const EndOfMessage = styled.div``;
+const EndOfMessage = styled.div`
+	margin-bottom: 50px;
+`;
