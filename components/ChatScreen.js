@@ -9,6 +9,7 @@ import { useCollection } from "react-firebase-hooks/firestore";
 import Message from "./Message";
 import firebase from "firebase";
 import getRecipientEmail from "../utils/getRecipientEmail";
+import TimeAgo from "timeago-react";
 
 function ChatScreen({ chat, messages }) {
 	const [input, setInput] = useState("");
